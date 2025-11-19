@@ -55,4 +55,6 @@ def search_group(name: str) -> str:
     :param name:
     :return:
     """
+@mcp.tool()
+def general_search(string: str) -> str:
 
