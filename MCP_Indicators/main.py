@@ -42,8 +42,6 @@ async def init_cache():
 async def get_cached(obj: str):
     """
         Cache lookup
-    :param ioc:
-    :return:
     """
     async with aiosqlite.connect(cache_db) as db:
         cur = await db.execute(
