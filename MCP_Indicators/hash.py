@@ -4,6 +4,7 @@ urlv4_md = "https://api.metadefender.com/v4"
 urlv5_md = "https://api.metadefender.com/v5/threat-intel"
 url_vt = "https://www.virustotal.com/api/v3/"
 url_otx = "https://otx.alienvault.com/api/v1/"
+url_yaraify = "https://yaraify-api.abuse.ch/api/v1/"
 
 def querypayload_abusech(hash, api_key):
     if re.search(r"^[A-Za-z0-9]{32}$", hash):
@@ -122,3 +123,17 @@ def check_ioc_filehash_otx(self, filehash, section="general"):
         return pretty
     else:
         return f"Error {res.status_code}: {res.text}"
+
+def queryhash_yaraify(hash, token = ""):
+    headers = {
+        "Accept": "application/json",
+    }
+
+    data = {
+        "query": "lookup_hash",
+        "search_term": hash,
+        "malpedia-token": token
+    }
+
+    response = requests.post(url_yaraify, headers = headers, json = data)
+    print(response.json())
