@@ -7,6 +7,7 @@ import asyncio
 from hashlib import sha256
 from typing import Any, Dict, Coroutine
 from datetime import datetime, timedelta
+import sys
 
 VT_KEY = os.getenv("VT_KEY")
 ABUSEIPDB_KEY = os.getenv("ABUSEIPDB_KEY")
@@ -18,6 +19,17 @@ OTX_KEY = os.getenv("OTX_KEY")
 
 load_dotenv()       #load env vars
 mcp = FastMCP(name = "indicatorsearch")
+"""
+    Run instructions for cursor locally (SSE):
+    uv run --with fastmcp fastmcp run PATH\MCP_Indicators\main.py --port {port}
+    
+    Config (in mcp.json):
+    "indicatorsearch": {
+      "url": "http://127.0.0.1:8000/mcp",
+      "transport": "sse"
+    }
+"""
+
 
 @mcp.tool()
 async def search_ioc_url(url: str) -> dict[str, bool | None | Any] | None:
@@ -198,3 +210,7 @@ def indicators_summary_prompt() -> str:
     Present the information in a clear, structured format (bullet points or tables),
     and indicate the type of IOC (IP, domain, URL, malware, etc.).
     """
+    return "hello world"
+
+if __name__ == "__main__":
+    mcp.run(port="8000")

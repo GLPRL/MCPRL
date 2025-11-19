@@ -1,3 +1,6 @@
+import re
+import requests
+
 threatfox_url = "https://threatfox-api.abuse.ch/api/v1/"
 urlhaus_url = "https://urlhaus-api.abuse.ch/v1/"
 urlv4_md = "https://api.metadefender.com/v4"
