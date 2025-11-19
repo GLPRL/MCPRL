@@ -87,6 +87,11 @@ async def search_ioc_hash(hash: str) -> dict[str, bool | None | Any] | None:
 
 @mcp.tool()
 async def search_ioc_ip(ip: str) -> dict[str, bool | None | Any] | None:
+    """
+        You
+    :param ip:
+    :return:
+    """
     cached = await get_cached(ip)
     if cached:
         return {"cached": True, "data": cached}
@@ -98,6 +103,37 @@ async def search_ioc_ip(ip: str) -> dict[str, bool | None | Any] | None:
 
 @mcp.tool()
 async def search_ioc_domain(domain: str) -> dict[str, bool | None | Any] | None:
+    """
+        Scan a domain IOC using multiple threat-intelligence sources.
+        Input is a fully qualified domain name (for example: "malicious-domain.com")
+
+        The tool must:
+        - Normalize and validate the domain.
+        - Query supported providers for domain reputation and intelligence, such as:
+        *Virus Total (domain reports)
+        *URLHaus (domain/host intelligence)
+        *OTX (Domain pulses and indicators)
+        *PhishTank (phishing classification)
+        *ThreatFox (malware or botnet activity)
+
+        And then:
+        Extract and return structured json with these fields:
+        reputation (clean/suspicious/malicious/unknown)
+        related_ips (A/AAAA records)
+        subdomains
+        related_urls or paths
+        associated malware families
+        tags/classifications
+        provider_responses (normalized per provider)
+
+        Lastly, aggregate provider verdicts into:
+        *Final verdict (clean/suspicious/malicious/unknown)
+        *Confidence (0-100)
+        *summary_text (brief explanation)
+
+    :param domain:
+    :return:
+    """
     cached = await get_cached(domain)
     if cached:
         return {"cached": True, "data": cached}
@@ -109,6 +145,28 @@ async def search_ioc_domain(domain: str) -> dict[str, bool | None | Any] | None:
 
 @mcp.tool()
 async def search_group(group: str) -> dict[str, bool | None | Any] | None:
+    """
+        Search for a given threat actor, which includes but not limited to:
+        APT Groups, Cybercrime Groups, Malware Operators, Ransomware Gangs etc.
+        The input is the name or alias of the group, for example:
+        APT29, Qilin, FIN7, Lazarus, DragonForce, Wizard Spider.
+        The tool will:
+        - Normalize actor name,
+        - Query external threat intelligence providers that support actor lookups:
+            MITRE ATT&CK (groups and techniques), MISP (Event tags, galaxies, attributes),
+            OTX (Pulses monitoring the actors), ThreatFox (malware families linked to the actors).
+
+    :param group:
+    :return: structured json as dictionary, contains:
+        actor name, known aliases, associated malware, associated campaigns, linked TTPs(MITRE techniques),
+        related IOCs, provider responses.
+        And aggregate all findings to unified summary:
+        - Threat level (low, medium, high)
+        - Confidence (0-100)
+        - summary_text (short human-readable explanation)
+
+    The tool MUST NOT guess or invent data out of no-where, and must only use information from providers.
+    """
     cached = await get_cached(group)
     if cached:
         return {"cached": True, "data": cached}
@@ -117,4 +175,3 @@ async def search_group(group: str) -> dict[str, bool | None | Any] | None:
     :param name:
     :return:
     """
-
