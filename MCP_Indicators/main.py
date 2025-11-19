@@ -21,7 +21,6 @@ CENSYS_KEY = ""
 OTX_KEY = ""
 
 load_dotenv()       #load env vars
-
 mcp = FastMCP(name = "indicatorsearch")
 
 
@@ -76,6 +75,24 @@ async def save_cache(ioc: str, result: dict):
 
 @mcp.tool()
 async def search_ioc_hash(hash: str) -> dict[str, bool | None | Any] | None:
+    """
+        Perform a threat-intelligence lookup for a given file hash.
+        The hash can be MD5, SHA1, SHA256, or SHA512.
+        Query all available providers and return a unified, structured result that includes:
+            - hash_type (MD5/SHA1/SHA256/SHA512)
+            - threat_score or vendor scores
+            - malware family or classification
+            - tags and threat labels
+            - detection counts (malicious, suspicious, clean, unknown)
+            - first_seen and last_seen timestamps
+            - any related IOCs (IPs, domains, URLs, other hashes)
+            - raw provider responses
+        Use cache when available and handle provider errors gracefully.
+        Input: { "hash": "<file hash>" }
+        Output: a JSON object with unified results from all the given providers.
+    :param hash:
+    :return:
+    """
     cached = await get_cached(hash)
     if cached:
         return {"cached": True, "data": cached}
@@ -88,7 +105,31 @@ async def search_ioc_hash(hash: str) -> dict[str, bool | None | Any] | None:
 @mcp.tool()
 async def search_ioc_ip(ip: str) -> dict[str, bool | None | Any] | None:
     """
-        You
+        Scan an IP address (IPv4 / IPv6) using multiple threat-intelligence sources.
+
+        The tool most:
+        - Validate and normalize the IP address.
+        - Query all available IP reputation and threat-intelligence providers such as:
+            Virus Total (IP reports)
+            AbuseIPDB (repurtation, categories, scores)
+            OTX (pulses, indicators, malware links)
+            ThreatFox (malware C2, bots or payload activities)
+
+        - Provide structured fields from each provider:
+            * reputation (malicious / suspicious / clean / unknown)
+            * geolocation (country, ASN, ISP) if available
+            * categories or tags (e.g., "C2", "scanning", "phishing", "botnet")
+            * open ports / services (from GreyNoise or similar)
+            * malware families or campaigns associated with the IP
+            * related domains (reverse DNS, passive DNS)
+            * provider_responses (normalized raw results)
+        - Produce an aggregated output:
+            * final_verdict (malicious / suspicious / clean / unknown)
+            * confidence (0–100)
+            * summary_text (clear human-readable explanation)
+
+        Use cache when available and handle provider errors gracefully.
+        The tool MUST NOT guess or invent data out of no-where, and must only use information from providers.
     :param ip:
     :return:
     """
@@ -117,20 +158,22 @@ async def search_ioc_domain(domain: str) -> dict[str, bool | None | Any] | None:
         *ThreatFox (malware or botnet activity)
 
         And then:
-        Extract and return structured json with these fields:
-        reputation (clean/suspicious/malicious/unknown)
-        related_ips (A/AAAA records)
-        subdomains
-        related_urls or paths
-        associated malware families
-        tags/classifications
-        provider_responses (normalized per provider)
+            Extract and return structured json with these fields:
+            reputation (clean/suspicious/malicious/unknown)
+            related_ips (A/AAAA records)
+            subdomains
+            related_urls or paths
+            associated malware families
+            tags/classifications
+            provider_responses (normalized per provider)
 
         Lastly, aggregate provider verdicts into:
-        *Final verdict (clean/suspicious/malicious/unknown)
-        *Confidence (0-100)
-        *summary_text (brief explanation)
+            * Final verdict (clean/suspicious/malicious/unknown)
+            * Confidence (0-100)
+            * summary_text (brief explanation)
 
+        Use cache when available and handle provider errors gracefully.
+        The tool MUST NOT guess or invent data out of no-where, and must only use information from providers.
     :param domain:
     :return:
     """
@@ -165,7 +208,8 @@ async def search_group(group: str) -> dict[str, bool | None | Any] | None:
         - Confidence (0-100)
         - summary_text (short human-readable explanation)
 
-    The tool MUST NOT guess or invent data out of no-where, and must only use information from providers.
+        Use cache when available and handle provider errors gracefully.
+        The tool MUST NOT guess or invent data out of no-where, and must only use information from providers.
     """
     cached = await get_cached(group)
     if cached:
