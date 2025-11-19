@@ -8,13 +8,13 @@ from hashlib import sha256
 from typing import Any, Dict, Coroutine
 from datetime import datetime, timedelta
 
-VT_KEY = ""
-ABUSEIPDB_KEY = ""
-METADEFENDER_KEY = ""
-ABUSE_CH_KEY = ""
-SHODAN_KEY = ""
-CENSYS_KEY = ""
-OTX_KEY = ""
+VT_KEY = os.getenv("VT_KEY")
+ABUSEIPDB_KEY = os.getenv("ABUSEIPDB_KEY")
+METADEFENDER_KEY = os.getenv("METADEFENDER_KEY")
+ABUSE_CH_KEY = os.getenv("ABUSE_CH_KEY")
+SHODAN_KEY = os.getenv("SHODAN_KEY")
+CENSYS_KEY = os.getenv("CENSYS_KEY")
+OTX_KEY = os.getenv("OTX_KEY")
 
 load_dotenv()       #load env vars
 mcp = FastMCP(name = "indicatorsearch")
