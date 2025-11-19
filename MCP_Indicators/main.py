@@ -74,6 +74,28 @@ async def save_cache(ioc: str, result: dict):
         await db.commit()
 
 @mcp.tool()
+async def search_ioc_url(url: str) -> dict[str, bool | None | Any] | None:
+    """
+    Perform a threat-intelligence lookup for a given URL.
+    Normalize the URL (strip tracking parameters when needed, enforce lowercase host, etc.)
+    Query all available providers and return a unified, structured result including:
+        - verdict or threat_score
+        - URL category (phishing, malware distribution, C2, scam, spam, etc.)
+        - detection counts (malicious, suspicious, clean, unknown)
+        - associated malware family or campaign tags
+        - redirected or embedded domains/IPs
+        - extracted IOCs (domains, IPs, hashes)
+        - first_seen and last_seen timestamps
+        - raw provider responses
+    Use cache when available and handle provider errors gracefully.
+    Input: { "url": "<url string>" }
+    Output: a JSON object with unified results.
+    """
+    cached = await get_cached(url)
+    if cached:
+        return {"cached": True, "data": cached}
+
+@mcp.tool()
 async def search_ioc_hash(hash: str) -> dict[str, bool | None | Any] | None:
     """
         Perform a threat-intelligence lookup for a given file hash.
@@ -90,17 +112,10 @@ async def search_ioc_hash(hash: str) -> dict[str, bool | None | Any] | None:
         Use cache when available and handle provider errors gracefully.
         Input: { "hash": "<file hash>" }
         Output: a JSON object with unified results from all the given providers.
-    :param hash:
-    :return:
     """
     cached = await get_cached(hash)
     if cached:
         return {"cached": True, "data": cached}
-    """
-
-    :param hash:
-    :return:
-    """
 
 @mcp.tool()
 async def search_ioc_ip(ip: str) -> dict[str, bool | None | Any] | None:
@@ -128,19 +143,13 @@ async def search_ioc_ip(ip: str) -> dict[str, bool | None | Any] | None:
             * confidence (0–100)
             * summary_text (clear human-readable explanation)
 
+        Input: { "ip": "<ip address>" }
         Use cache when available and handle provider errors gracefully.
         The tool MUST NOT guess or invent data out of no-where, and must only use information from providers.
-    :param ip:
-    :return:
     """
     cached = await get_cached(ip)
     if cached:
         return {"cached": True, "data": cached}
-    """
-
-    :param ip:
-    :return:
-    """
 
 @mcp.tool()
 async def search_ioc_domain(domain: str) -> dict[str, bool | None | Any] | None:
@@ -172,6 +181,7 @@ async def search_ioc_domain(domain: str) -> dict[str, bool | None | Any] | None:
             * Confidence (0-100)
             * summary_text (brief explanation)
 
+        Input: { "domain": "<fully qualified domain>" }
         Use cache when available and handle provider errors gracefully.
         The tool MUST NOT guess or invent data out of no-where, and must only use information from providers.
     :param domain:
@@ -180,11 +190,6 @@ async def search_ioc_domain(domain: str) -> dict[str, bool | None | Any] | None:
     cached = await get_cached(domain)
     if cached:
         return {"cached": True, "data": cached}
-    """
-
-    :param domain:
-    :return:
-    """
 
 @mcp.tool()
 async def search_group(group: str) -> dict[str, bool | None | Any] | None:
@@ -199,23 +204,18 @@ async def search_group(group: str) -> dict[str, bool | None | Any] | None:
             MITRE ATT&CK (groups and techniques), MISP (Event tags, galaxies, attributes),
             OTX (Pulses monitoring the actors), ThreatFox (malware families linked to the actors).
 
-    :param group:
-    :return: structured json as dictionary, contains:
-        actor name, known aliases, associated malware, associated campaigns, linked TTPs(MITRE techniques),
-        related IOCs, provider responses.
+        Return a structured json as dictionary, contains:
+            actor name, known aliases, associated malware, associated campaigns, linked TTPs(MITRE techniques),
+            related IOCs, provider responses.
         And aggregate all findings to unified summary:
-        - Threat level (low, medium, high)
-        - Confidence (0-100)
-        - summary_text (short human-readable explanation)
+            - Threat level (low, medium, high)
+            - Confidence (0-100)
+            - summary_text (short human-readable explanation)
 
+        Input: { "group": "<group name or alias>" }
         Use cache when available and handle provider errors gracefully.
         The tool MUST NOT guess or invent data out of no-where, and must only use information from providers.
     """
     cached = await get_cached(group)
     if cached:
         return {"cached": True, "data": cached}
-    """
-
-    :param name:
-    :return:
-    """
