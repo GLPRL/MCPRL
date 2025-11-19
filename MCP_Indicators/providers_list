@@ -1,0 +1,24 @@
+VirusTotal
+AbuseCH
+MetaDefender
+AbuseIPDB
+Shodan
+OTX
+
+Future(?):
+HASH lookup:
+https://malshare.com/
+
+HASH+IP Lookup:
+https://hybrid-analysis.com/
+
+IP:
+AbuseIPDB
+Shodan
+GreyNoise
+
+Domain + URL:
+PhishTank
+
+Threat Actors/APTs:
+MITRE ATT&CK API

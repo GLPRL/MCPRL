@@ -1,16 +1,12 @@
-from fastmcp import FastMCP
+from mcp.server.fastmcp import FastMCP
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware    #handle api requests
 from starlette.middleware import Middleware
 import os
 import asyncio
-import aiosqlite
 from hashlib import sha256
 from typing import Any, Dict, Coroutine
 from datetime import datetime, timedelta
-
-cache_db = "ioc_cache.db"
-cache_ttl = 1800    # 30 minutes cache
 
 VT_KEY = ""
 ABUSEIPDB_KEY = ""
@@ -22,54 +18,6 @@ OTX_KEY = ""
 
 load_dotenv()       #load env vars
 mcp = FastMCP(name = "indicatorsearch")
-
-
-async def init_cache():
-    """
-        DB Initialization
-    :return: none
-    """
-    async with aiosqlite.connect(cache_db) as db:
-        await db.execute("""
-                    CREATE TABLE IF NOT EXISTS cache (
-                        ioc TEXT PRIMARY KEY,
-                        result TEXT,
-                        timestamp INTEGER
-                    )
-                """)
-        await db.commit()
-
-async def get_cached(obj: str):
-    """
-        Cache lookup
-    """
-    async with aiosqlite.connect(cache_db) as db:
-        cur = await db.execute(
-            "SELECT result, timestamp FROM cache WHERE ioc = ?", (obj,)
-        )
-        row = await cur.fetchone()
-        if not row:
-            return None
-
-        result, ts = row
-        if (datetime.utcnow().timestamp() - ts) > cache_ttl:
-            return None  # expired
-
-        return json.loads(result)
-
-async def save_cache(ioc: str, result: dict):
-    """
-        Save ioc and search result to cache, for later lookups if needed.
-    :param ioc:
-    :param result:
-    :return:
-    """
-    async with aiosqlite.connect(cache_db) as db:
-        await db.execute(
-            "REPLACE INTO cache (ioc, result, timestamp) VALUES (?, ?, ?)",
-            (ioc, json.dumps(result), int(datetime.utcnow().timestamp()))
-        )
-        await db.commit()
 
 @mcp.tool()
 async def search_ioc_url(url: str) -> dict[str, bool | None | Any] | None:
@@ -89,9 +37,11 @@ async def search_ioc_url(url: str) -> dict[str, bool | None | Any] | None:
     Input: { "url": "<url string>" }
     Output: a JSON object with unified results.
     """
+    """
     cached = await get_cached(url)
     if cached:
         return {"cached": True, "data": cached}
+        """
 
 @mcp.tool()
 async def search_ioc_hash(hash: str) -> dict[str, bool | None | Any] | None:
@@ -111,9 +61,11 @@ async def search_ioc_hash(hash: str) -> dict[str, bool | None | Any] | None:
         Input: { "hash": "<file hash>" }
         Output: a JSON object with unified results from all the given providers.
     """
+    """
     cached = await get_cached(hash)
     if cached:
         return {"cached": True, "data": cached}
+        """
 
 @mcp.tool()
 async def search_ioc_ip(ip: str) -> dict[str, bool | None | Any] | None:
@@ -145,9 +97,11 @@ async def search_ioc_ip(ip: str) -> dict[str, bool | None | Any] | None:
         Use cache when available and handle provider errors gracefully.
         The tool MUST NOT guess or invent data out of no-where, and must only use information from providers.
     """
+    """
     cached = await get_cached(ip)
     if cached:
         return {"cached": True, "data": cached}
+        """
 
 @mcp.tool()
 async def search_ioc_domain(domain: str) -> dict[str, bool | None | Any] | None:
@@ -185,9 +139,11 @@ async def search_ioc_domain(domain: str) -> dict[str, bool | None | Any] | None:
     :param domain:
     :return:
     """
+    """
     cached = await get_cached(domain)
     if cached:
         return {"cached": True, "data": cached}
+        """
 
 @mcp.tool()
 async def search_group(group: str) -> dict[str, bool | None | Any] | None:
@@ -214,6 +170,31 @@ async def search_group(group: str) -> dict[str, bool | None | Any] | None:
         Use cache when available and handle provider errors gracefully.
         The tool MUST NOT guess or invent data out of no-where, and must only use information from providers.
     """
+    """
     cached = await get_cached(group)
     if cached:
         return {"cached": True, "data": cached}
+        """
+
+@mcp.prompt()
+def indicators_summary_prompt() -> str:
+    """
+    You are a helpful assistant for security operations analysts, security engineers, threat management operators,
+    and OSINT investigators.
+
+    Your goal is to provide concise and structured information about indicators of compromise (IOCs) requested by the user.
+    For each IOC, you should:
+
+    1. Aggregate relevant information from public sources.
+    2. Summarize the context and potential threat.
+    3. Provide details about associated attack groups, including:
+        - APT Groups
+        - Cybercrime Groups
+        - Malware Operators
+        - Ransomware Gangs
+    4. Provide information about malicious URLs, domains, and files. If these are linked to campaigns, include relevant campaign details.
+    5. Provide information about IP addresses flagged as malicious, following the same approach as in point 4.
+
+    Present the information in a clear, structured format (bullet points or tables),
+    and indicate the type of IOC (IP, domain, URL, malware, etc.).
+    """
