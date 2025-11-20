@@ -3,12 +3,17 @@ import os
 import asyncio
 from dotenv import load_dotenv
 from typing import Any, Dict, Coroutine
+import aiohttp
 
 from mcp.server.fastmcp import FastMCP
-from starlette.middleware.cors import CORSMiddleware    #handle api requests
+from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware import Middleware
 
-
+import url
+import hash
+import ip
+import apt
+import domain
 
 VT_KEY = os.getenv("VT_KEY")
 ABUSEIPDB_KEY = os.getenv("ABUSEIPDB_KEY")
@@ -20,20 +25,9 @@ OTX_KEY = os.getenv("OTX_KEY")
 
 load_dotenv()       #load env vars
 mcp = FastMCP(name = "indicatorsearch")
-"""
-    Run instructions for cursor locally (SSE):
-    uv run --with fastmcp fastmcp run PATH\MCP_Indicators\main.py --port {port}
-    
-    Config (in mcp.json):
-    "indicatorsearch": {
-      "url": "http://127.0.0.1:8000/mcp",
-      "transport": "sse"
-    }
-"""
-
 
 @mcp.tool()
-async def search_ioc_url(url: str) -> dict[str, bool | None | Any] | None:
+async def search_ioc_url(target: str) -> dict[str, bool | None | Any] | None:
     """
     Perform a threat-intelligence lookup for a given URL.
     Normalize the URL (strip tracking parameters when needed, enforce lowercase host, etc.)
@@ -49,8 +43,16 @@ async def search_ioc_url(url: str) -> dict[str, bool | None | Any] | None:
     Use cache when available and handle provider errors gracefully.
     Input: { "url": "<url string>" }
     Output: a JSON object with unified results.
+    Use these sources, but it's always recommended not to limit yourself to only them.
     """
-    queryurl_abusech(url, ABUSE_CH_KEY)
+    abuse = url.queryurl_abusech(target, ABUSE_CH_KEY)
+    otx = url.check_ioc_url_otx(target, OTX_KEY)
+    vt = url.search_vt(target, VT_KEY)
+    return {
+        "abuse_ch": abuse,
+        "otx": otx,
+        "vt": vt
+    }
 
 @mcp.tool()
 async def search_ioc_hash(hash: str) -> dict[str, bool | None | Any] | None:
@@ -69,6 +71,7 @@ async def search_ioc_hash(hash: str) -> dict[str, bool | None | Any] | None:
         Use cache when available and handle provider errors gracefully.
         Input: { "hash": "<file hash>" }
         Output: a JSON object with unified results from all the given providers.
+        Use these sources, but it's always recommended not to limit yourself to only them.
     """
 
 
@@ -101,6 +104,7 @@ async def search_ioc_ip(ip: str) -> dict[str, bool | None | Any] | None:
         Input: { "ip": "<ip address>" }
         Use cache when available and handle provider errors gracefully.
         The tool MUST NOT guess or invent data out of no-where, and must only use information from providers.
+        Use these sources, but it's always recommended not to limit yourself to only them.
     """
 
 
@@ -137,6 +141,7 @@ async def search_ioc_domain(domain: str) -> dict[str, bool | None | Any] | None:
         Input: { "domain": "<fully qualified domain>" }
         Use cache when available and handle provider errors gracefully.
         The tool MUST NOT guess or invent data out of no-where, and must only use information from providers.
+        Use these sources, but it's always recommended not to limit yourself to only them.
     :param domain:
     :return:
     """
@@ -166,6 +171,7 @@ async def search_group(group: str) -> dict[str, bool | None | Any] | None:
         Input: { "group": "<group name or alias>" }
         Use cache when available and handle provider errors gracefully.
         The tool MUST NOT guess or invent data out of no-where, and must only use information from providers.
+        Use these sources, but it's always recommended not to limit yourself to only them.
     """
 
 
@@ -195,3 +201,4 @@ def indicators_summary_prompt() -> str:
 
 if __name__ == "__main__":
     mcp.run(port="8000")
+
