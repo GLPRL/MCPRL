@@ -49,11 +49,6 @@ async def search_ioc_url(url: str) -> dict[str, bool | None | Any] | None:
     Input: { "url": "<url string>" }
     Output: a JSON object with unified results.
     """
-    """
-    cached = await get_cached(url)
-    if cached:
-        return {"cached": True, "data": cached}
-        """
 
 @mcp.tool()
 async def search_ioc_hash(hash: str) -> dict[str, bool | None | Any] | None:
@@ -73,11 +68,7 @@ async def search_ioc_hash(hash: str) -> dict[str, bool | None | Any] | None:
         Input: { "hash": "<file hash>" }
         Output: a JSON object with unified results from all the given providers.
     """
-    """
-    cached = await get_cached(hash)
-    if cached:
-        return {"cached": True, "data": cached}
-        """
+
 
 @mcp.tool()
 async def search_ioc_ip(ip: str) -> dict[str, bool | None | Any] | None:
@@ -109,11 +100,7 @@ async def search_ioc_ip(ip: str) -> dict[str, bool | None | Any] | None:
         Use cache when available and handle provider errors gracefully.
         The tool MUST NOT guess or invent data out of no-where, and must only use information from providers.
     """
-    """
-    cached = await get_cached(ip)
-    if cached:
-        return {"cached": True, "data": cached}
-        """
+
 
 @mcp.tool()
 async def search_ioc_domain(domain: str) -> dict[str, bool | None | Any] | None:
@@ -151,11 +138,7 @@ async def search_ioc_domain(domain: str) -> dict[str, bool | None | Any] | None:
     :param domain:
     :return:
     """
-    """
-    cached = await get_cached(domain)
-    if cached:
-        return {"cached": True, "data": cached}
-        """
+
 
 @mcp.tool()
 async def search_group(group: str) -> dict[str, bool | None | Any] | None:
@@ -182,11 +165,7 @@ async def search_group(group: str) -> dict[str, bool | None | Any] | None:
         Use cache when available and handle provider errors gracefully.
         The tool MUST NOT guess or invent data out of no-where, and must only use information from providers.
     """
-    """
-    cached = await get_cached(group)
-    if cached:
-        return {"cached": True, "data": cached}
-        """
+
 
 @mcp.prompt()
 def indicators_summary_prompt() -> str:
