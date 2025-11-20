@@ -1,13 +1,14 @@
-from mcp.server.fastmcp import FastMCP
-from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware    #handle api requests
-from starlette.middleware import Middleware
+import sys
 import os
 import asyncio
-from hashlib import sha256
+from dotenv import load_dotenv
 from typing import Any, Dict, Coroutine
-from datetime import datetime, timedelta
-import sys
+
+from mcp.server.fastmcp import FastMCP
+from starlette.middleware.cors import CORSMiddleware    #handle api requests
+from starlette.middleware import Middleware
+
+
 
 VT_KEY = os.getenv("VT_KEY")
 ABUSEIPDB_KEY = os.getenv("ABUSEIPDB_KEY")
@@ -49,6 +50,7 @@ async def search_ioc_url(url: str) -> dict[str, bool | None | Any] | None:
     Input: { "url": "<url string>" }
     Output: a JSON object with unified results.
     """
+    queryurl_abusech(url, ABUSE_CH_KEY)
 
 @mcp.tool()
 async def search_ioc_hash(hash: str) -> dict[str, bool | None | Any] | None:
