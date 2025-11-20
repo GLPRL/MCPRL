@@ -1,0 +1,7 @@
+pyproject.toml
+query_hash.py
+uv.lock
+hash_query_results.json
+.python-version
+.env
+.venv
